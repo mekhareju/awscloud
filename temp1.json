@@ -1,62 +1,125 @@
 {
- "AWSTemplateFormatVersion": "2010-09-09",
- "Description": "iot lambda dynamodb setup",
-
- "Resources":{
-    "BasicLambdaFunction":{
-        "Type" : "AWS::Lambda::Function",
-        "Properties" : {
-             "Code" : Code,
-             "Role" : String,
-             "Handler" : ,
-             "Runtime" : '
-             "Tags" : [ Tag, ... ],
-             "MemorySize" : Integer,
-             "PackageType" : String,
-             "Role" : [
-                { 
-                    
-                }
-             ]
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "IoT Lambda DynamoDB setup",
+  
+    "Resources": {
+       "BasicLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "s3-bucket-name",
+                "S3Key": "code-file.zip"
+              },
+              "Role": {
+                "Fn::GetAtt": []
+              },
+              "Handler": "index.handler",
+              "Runtime": "nodejs",
+              "MemorySize": 128,
+              "PackageType": "Zip"
+            }
+          },
+      "BasicDynamoDBTable": {
+        "Type": "AWS::DynamoDB::Table",
+        "Properties": {
+          "BillingMode": "PAY_PER_REQUEST",
+          "TableClass": "STANDARD",
+          "TableName": "DataTable",
+          "AttributeDefinitions": [
+            {
+              "AttributeName": "DeviceId",
+              "AttributeType": "S"
+            },
+            {
+              "AttributeName": "Timestamp",
+              "AttributeType": "N"
+            }
+          ],
+          "KeySchema": [
+            {
+              "AttributeName": "DeviceId",
+              "KeyType": "HASH"
+            },
+            {
+              "AttributeName": "Timestamp",
+              "KeyType": "RANGE"
+            }
+          ]
         }
-    },
-    "BasicDynamoDBTable":{
-        "Type" : "AWS::DynamoDB::Table",
-        "Properties" : {
-            "TableClass" : String,
-            "TableName" : String,
-            "AttributeDefinitions" : [ AttributeDefinition, ... ],
-            "KeySchema" : [ KeySchema, ... ],
-        }
-    },
-    "BasicIOTRule":{
-        "Type" : "AWS::IoT::TopicRule",
-        "Properties" : {
-            "RuleName" : String,
-            "Tags" : [ Tag, ... ],
-            "TopicRulePayload" : TopicRulePayload,
-            "Actions" : [
-                {
-
+      },
+      "BasicIOTRule": {
+        "Type": "AWS::IoT::TopicRule",
+        "Properties": {
+          "RuleName": "IoTLambdaRule",
+          "TopicRulePayload": {
+            "RuleDisabled": "false",
+            "Sql": "SELECT * FROM 'iot/topic'",
+            "Actions": [
+              {
+                "Lambda": {
+                  "FunctionArn": {
+                    "Fn::GetAtt": ["BasicLambdaFunction", "Arn"]
+                  }
                 }
+              }
             ]
-    }
-    },
-    "IOTPolicy":{
-        "Type" : "AWS::IoT::Policy",
-        "Properties" : {
-            "PolicyDocument" : Json,
-            "PolicyName" : String,
-            "Statement" : [
-                {
-
+          }
+        }
+      },
+      "IOTPolicy": {
+        "Type": "AWS::IoT::Policy",
+        "Properties": {
+          "PolicyName": "IoTPolicy",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "iot:Connect",
+                  "iot:Publish",
+                  "iot:Subscribe",
+                  "iot:Receive"
+                ],
+                "Resource": "*"
+              }
+            ]
+          }
+        }
+      },
+      "LambdaExecutionRole" :{
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": { "Service": "lambda.amazonaws.com" },
+                "Action": "sts:AssumeRole"
+              }
+            ]
+          },
+          "Path" : "/",
+          "Policies":[
+            {
+                "PolicyName": "root",
+                "PolicyDocument":{
+                    "Version":"2012-10-17",
+                    "Statement":[
+                        {
+                            "Effect":"Allow",
+                            "Action":"*",
+                            "Resource":"*"
+                        }
+                    ]
                 }
-            ],
-            "Tags" : [ Tag, ... ]
+            }
+          ]
+
+      }
+
+      }
     }
-    }
-
-   }
-
-
-}
+  }
+  

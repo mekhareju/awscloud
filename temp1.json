@@ -1,0 +1,62 @@
+{
+ "AWSTemplateFormatVersion": "2010-09-09",
+ "Description": "iot lambda dynamodb setup",
+
+ "Resources":{
+    "BasicLambdaFunction":{
+        "Type" : "AWS::Lambda::Function",
+        "Properties" : {
+             "Code" : Code,
+             "Role" : String,
+             "Handler" : ,
+             "Runtime" : '
+             "Tags" : [ Tag, ... ],
+             "MemorySize" : Integer,
+             "PackageType" : String,
+             "Role" : [
+                { 
+                    
+                }
+             ]
+        }
+    },
+    "BasicDynamoDBTable":{
+        "Type" : "AWS::DynamoDB::Table",
+        "Properties" : {
+            "TableClass" : String,
+            "TableName" : String,
+            "AttributeDefinitions" : [ AttributeDefinition, ... ],
+            "KeySchema" : [ KeySchema, ... ],
+        }
+    },
+    "BasicIOTRule":{
+        "Type" : "AWS::IoT::TopicRule",
+        "Properties" : {
+            "RuleName" : String,
+            "Tags" : [ Tag, ... ],
+            "TopicRulePayload" : TopicRulePayload,
+            "Actions" : [
+                {
+
+                }
+            ]
+    }
+    },
+    "IOTPolicy":{
+        "Type" : "AWS::IoT::Policy",
+        "Properties" : {
+            "PolicyDocument" : Json,
+            "PolicyName" : String,
+            "Statement" : [
+                {
+
+                }
+            ],
+            "Tags" : [ Tag, ... ]
+    }
+    }
+
+   }
+
+
+}
